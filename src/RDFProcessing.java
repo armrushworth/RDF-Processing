@@ -18,12 +18,12 @@ public class RDFProcessing {
         try {
             // Create an empty model
             Model model = dataset.getDefaultModel();
-           
+            
             // Use the FileManager to find the input file
             InputStream inputStream = FileManager.get().open(inputFileName);
             if (inputStream == null) throw new IllegalArgumentException("File: " + inputFileName + " not found");
             
-            // Load the data in the Nobel prize data dump file
+            // Load the data from the Nobel prize data dump file
             model.read(inputStream, null, "N-TRIPLES");
             
             // Print the first 20 elements
@@ -51,7 +51,23 @@ public class RDFProcessing {
                 ResultSet results = query.execSelect();
                 ResultSetFormatter.out(results);
             }
-             
+            
+            // Find the categories awarded during the first edition of the Nobel prize
+            try (QueryExecution query = QueryExecutionFactory.create(
+                    "PREFIX nobel: <http://data.nobelprize.org/terms/> "
+                    + "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> "
+                    + "SELECT ?category "
+                    + "WHERE {"
+                        + "?subject rdf:type nobel:NobelPrize; "
+                        + "nobel:category ?category; "
+                        + "nobel:year ?year; "
+                        + "FILTER (?year = 1901)"
+                    + "}"
+                    , dataset)) {
+                ResultSet results = query.execSelect();
+                ResultSetFormatter.out(results);
+            }
+            
             dataset.commit();
         } finally {
             dataset.end();
