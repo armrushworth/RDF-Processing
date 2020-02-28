@@ -21,16 +21,33 @@ public class RDFProcessing {
            
             // Use the FileManager to find the input file
             InputStream inputStream = FileManager.get().open(inputFileName);
-            if (inputStream == null) {
-                throw new IllegalArgumentException("File: " + inputFileName + " not found");
-            }
+            if (inputStream == null) throw new IllegalArgumentException("File: " + inputFileName + " not found");
             
             // Load the data in the Nobel prize data dump file
             model.read(inputStream, null, "N-TRIPLES");
             
-            // TODO Prefixes and formatting
-            // Print the first 20 elements in the triple store
+            // Print the first 20 elements
             try (QueryExecution query = QueryExecutionFactory.create("SELECT * WHERE {?subject ?predicate ?object} LIMIT 20", dataset)) {
+                ResultSet results = query.execSelect();
+                ResultSetFormatter.out(results);
+            }
+            
+            // Find the name(s) of the most recent Nobel Chemistry award winner(s)
+            try (QueryExecution query = QueryExecutionFactory.create(
+                    "PREFIX category: <http://data.nobelprize.org/resource/category/> "
+                    + "PREFIX foaf: <http://xmlns.com/foaf/0.1/> "
+                    + "PREFIX nobel: <http://data.nobelprize.org/terms/> "
+                    + "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> "
+                    + "SELECT ?name "
+                    + "WHERE {"
+                        + "?subject rdf:type nobel:NobelPrize; "
+                        + "nobel:category category:Chemistry; "
+                        + "nobel:year ?year; "
+                        + "nobel:laureate ?laureate. "
+                        + "?laureate foaf:name ?name. "
+                        + "FILTER (?year = 2016)"
+                    + "}"
+                    , dataset)) {
                 ResultSet results = query.execSelect();
                 ResultSetFormatter.out(results);
             }
