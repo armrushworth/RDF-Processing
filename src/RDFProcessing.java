@@ -6,9 +6,6 @@ import org.apache.jena.tdb.TDBFactory;
 import org.apache.jena.util.FileManager;
 
 public class RDFProcessing {
-    
-    static final String inputFileName = "Nobeldump.nt";
-    
     public static void main (String args[]) {
         // Make a TDB-backed dataset
         String directory = "NobelDB";
@@ -20,6 +17,7 @@ public class RDFProcessing {
             Model model = dataset.getDefaultModel();
             
             // Use the FileManager to find the input file
+            String inputFileName = "Nobeldump.nt";
             InputStream inputStream = FileManager.get().open(inputFileName);
             if (inputStream == null) throw new IllegalArgumentException("File: " + inputFileName + " not found");
             
@@ -40,7 +38,7 @@ public class RDFProcessing {
                     + "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> "
                     + "SELECT ?name "
                     + "WHERE { "
-                        + "?subject rdf:type nobel:NobelPrize ; "
+                        + "?nobel rdf:type nobel:NobelPrize ; "
                         + "nobel:category category:Chemistry ; "
                         + "nobel:year 2016 ; "
                         + "nobel:laureate ?laureate . "
@@ -57,7 +55,7 @@ public class RDFProcessing {
                     + "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> "
                     + "SELECT ?category "
                     + "WHERE { "
-                        + "?subject rdf:type nobel:NobelPrize ; "
+                        + "?nobel rdf:type nobel:NobelPrize ; "
                         + "nobel:category ?category ; "
                         + "nobel:year 1902 . "
                     + "}"
