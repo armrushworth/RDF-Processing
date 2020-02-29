@@ -27,7 +27,7 @@ public class RDFProcessing {
             model.read(inputStream, null, "N-TRIPLES");
             
             // Print the first 20 elements
-            try (QueryExecution query = QueryExecutionFactory.create("SELECT * WHERE {?subject ?predicate ?object} LIMIT 20", dataset)) {
+            try (QueryExecution query = QueryExecutionFactory.create("SELECT * WHERE { ?subject ?predicate ?object } LIMIT 20", dataset)) {
                 ResultSet results = query.execSelect();
                 ResultSetFormatter.out(results);
             }
@@ -39,13 +39,12 @@ public class RDFProcessing {
                     + "PREFIX nobel: <http://data.nobelprize.org/terms/> "
                     + "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> "
                     + "SELECT ?name "
-                    + "WHERE {"
-                        + "?subject rdf:type nobel:NobelPrize; "
-                        + "nobel:category category:Chemistry; "
-                        + "nobel:year ?year; "
-                        + "nobel:laureate ?laureate. "
-                        + "?laureate foaf:name ?name. "
-                        + "FILTER (?year = 2016)"
+                    + "WHERE { "
+                        + "?subject rdf:type nobel:NobelPrize ; "
+                        + "nobel:category category:Chemistry ; "
+                        + "nobel:year 2016 ; "
+                        + "nobel:laureate ?laureate . "
+                        + "?laureate foaf:name ?name . "
                     + "}"
                     , dataset)) {
                 ResultSet results = query.execSelect();
@@ -57,12 +56,34 @@ public class RDFProcessing {
                     "PREFIX nobel: <http://data.nobelprize.org/terms/> "
                     + "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> "
                     + "SELECT ?category "
-                    + "WHERE {"
-                        + "?subject rdf:type nobel:NobelPrize; "
-                        + "nobel:category ?category; "
-                        + "nobel:year ?year; "
-                        + "FILTER (?year = 1901)"
+                    + "WHERE { "
+                        + "?subject rdf:type nobel:NobelPrize ; "
+                        + "nobel:category ?category ; "
+                        + "nobel:year 1902 . "
                     + "}"
+                    , dataset)) {
+                ResultSet results = query.execSelect();
+                ResultSetFormatter.out(results);
+            }
+            
+            /* List, in ascending order of number of awards, the countries who have Physiology or Medicine prize winners
+            affiliated to one of their universities together with the number of awards received by that country */
+            try (QueryExecution query = QueryExecutionFactory.create(
+                    "PREFIX category: <http://data.nobelprize.org/resource/category/> "
+                    + "PREFIX dbo: <http://dbpedia.org/ontology/> "
+                    + "PREFIX nobel: <http://data.nobelprize.org/terms/> "
+                    + "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> "
+                    + "SELECT ?country (count(?country) as ?count) "
+                    + "WHERE { "
+                        + "?nobel nobel:category category:Physiology_or_Medicine . "
+                        + "OPTIONAL { "
+                            + "?nobel nobel:university ?university . "
+                            + "?university dbo:country ?country . "
+                        + "} "
+                        + "FILTER (BOUND(?university)) "
+                    + "} "
+                    + "GROUP BY ?country "
+                    + "ORDER BY ?count"
                     , dataset)) {
                 ResultSet results = query.execSelect();
                 ResultSetFormatter.out(results);
