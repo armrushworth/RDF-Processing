@@ -70,7 +70,6 @@ public class RDFProcessing {
                     "PREFIX category: <http://data.nobelprize.org/resource/category/> "
                     + "PREFIX dbo: <http://dbpedia.org/ontology/> "
                     + "PREFIX nobel: <http://data.nobelprize.org/terms/> "
-                    + "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> "
                     + "SELECT ?country (count(?country) as ?count) "
                     + "WHERE { "
                         + "?nobel nobel:category category:Physiology_or_Medicine . "
@@ -82,6 +81,26 @@ public class RDFProcessing {
                     + "} "
                     + "GROUP BY ?country "
                     + "ORDER BY ?count"
+                    , dataset)) {
+                ResultSet results = query.execSelect();
+                ResultSetFormatter.out(results);
+            }
+            
+            /* Find all the Nobel Laureates, with the year of the award, who were born either in Germany 
+            or in a country that is now known as Germany */
+            try (QueryExecution query = QueryExecutionFactory.create(
+                    "PREFIX country: <http://data.nobelprize.org/resource/country/> "
+                    + "PREFIX dbo: <http://dbpedia.org/ontology/> "
+                    + "PREFIX foaf: <http://xmlns.com/foaf/0.1/> "
+                    + "PREFIX nobel: <http://data.nobelprize.org/terms/> "
+                    + "SELECT ?name ?year "
+                    + "WHERE { "
+                        + "?laureate dbo:birthPlace ?country ; "
+                        + "foaf:name ?name ; "
+                        + "nobel:nobelPrize ?nobel . "
+                        + "?nobel nobel:year ?year . "
+                        + "FILTER (?country = country:Germany || regex(str(?country), \"now_Germany\")) "
+                    + "}"
                     , dataset)) {
                 ResultSet results = query.execSelect();
                 ResultSetFormatter.out(results);
